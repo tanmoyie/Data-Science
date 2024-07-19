@@ -5,14 +5,14 @@ from scipy.special import gamma
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.weibull_min.html
 
 #%% Weibull Distribution
-k = 10
-lambda0 = 20
+k = 1.6
+lambda0 = 1
 # Calculate the expected wait time
 expected_wait_time = lambda0 * gamma(1 + 1/k)
 print(expected_wait_time)
 
 # Plot PDF
-x = np.linspace(0, 30, 1000)
+x = np.linspace(0, 3, 1000)
 y0 = weibull_min.rvs(10)
 y = weibull_min.pdf(x, k, scale=lambda0)
 
