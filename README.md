@@ -5,6 +5,6 @@ An efficient frontier of a [portfolio optimization project](https://github.com/t
 <img width="610" alt="Portflio optimization" src="https://github.com/user-attachments/assets/60f4f2c2-ca4f-4699-bee4-4f5b6e9d810e">
 
 
-Clustering Penguin species
+Clustering Penguin species [project](https://github.com/tanmoyie/Data-Science/blob/master/4.0-Clustering-Antarctic-Penguin-Species-DataCamp.ipynb)
 
 ![clustering](https://github.com/user-attachments/assets/111b85bc-9cfb-4a31-9f1f-e8e6b16bc619)
