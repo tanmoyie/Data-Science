@@ -18,5 +18,8 @@ Add content++
         └── time_series_plotter.py 
     
 
+
+![ARIMA_forecasting](https://github.com/user-attachments/assets/c3e15393-1c8f-45e5-a22b-b419e2abf14e)
+
 # How to run
 
