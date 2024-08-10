@@ -1,6 +1,7 @@
 # Summary
 
 # Notebook Structure
+
 Python Implementation
 ├── requirement.txt         Dependencies
 ├── README.md               Project README
