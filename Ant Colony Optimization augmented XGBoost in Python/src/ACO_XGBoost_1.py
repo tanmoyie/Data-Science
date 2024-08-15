@@ -3,6 +3,7 @@ from xgboost import XGBRegressor
 from sklearn.metrics import root_mean_squared_error
 import random
 
+
 class AntColonyOptimizer:
     def __init__(self, num_ants, num_iterations, evaporation_rate, pheromone_deposition_rate, hyperparameter_ranges):
         self.num_ants = num_ants
@@ -18,7 +19,8 @@ class AntColonyOptimizer:
         model = XGBRegressor(
             n_estimators=int(params['n_estimators']),
             max_depth=int(params['max_depth']),
-            learning_rate=params['learning_rate']
+            learning_rate=params['learning_rate'],
+            n_jobs=8  # ++
         )
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
@@ -32,6 +34,7 @@ class AntColonyOptimizer:
 
         print('Best Parameters:', self.best_params)
         print('Best RMSE Score:', self.best_score)
+        print('--')
 
         return self.best_params, self.best_score
 
@@ -43,6 +46,7 @@ class AntColonyOptimizer:
                 value = np.random.choice(np.linspace(low, high, self.num_ants))
                 params[param] = value
             ants.append(params)
+            print('ants', ants)
         return ants
 
     def _evaluate_ants(self, ants, X_train, y_train, X_test, y_test):
@@ -66,3 +70,5 @@ class AntColonyOptimizer:
         )
         model.fit(X_train, y_train)
         return model
+
+        # is this code producing multiple hyperparam combinations??  ++

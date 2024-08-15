@@ -18,7 +18,7 @@ class ForecastingPLot:
         self.train, self.test = train_test_split(self.data, test_size=test_size, shuffle=False)
         #++
 
-    def fit_model(self, order=(5, 1, 0), seasonal_order=(1, 1, 1, 12)):
+    def fit_model(self, order=(2, 1, 0), seasonal_order=(1, 1, 1, 12)):
         if self.model_type == 'ARIMA':
             self.model = ARIMA(self.train[self.target_column], order=order)
             self.model_fit = self.model.fit()
@@ -47,19 +47,21 @@ class ForecastingPLot:
                 'upper Value': self.forecast_values + norm.ppf(0.975) * sigma
             })
 
-    def plot_forecast(self, model_type):
-        fig, ax = plt.subplots(figsize=(8, 4))
+    def plot_forecast(self, model_type, d):
+        fig, ax = plt.subplots(figsize=(5, 3))
         plt.plot(self.data.index, self.data[self.target_column], label='Historical Data')
 
         plt.plot(pd.date_range(self.data.index[-1], periods=len(self.forecast_values)+1, freq='D')[1:],
                  self.forecast_values, label='Forecast', color='red')
-        ax.axvline('01-01-2024', color='black', ls='--')
+        ax.axvline(pd.to_datetime('01-01-2024'), color='black', ls='--')
 
         plt.fill_between(pd.date_range(self.data.index[-1], periods=len(self.forecast_values)+1, freq='D')[1:],
                          self.conf_int.iloc[:, 0], self.conf_int.iloc[:, 1], color='pink', alpha=0.3, label='Confidence Interval')
+
+        ax.set_xticklabels(d, rotation=75)
         plt.legend()
         plt.tight_layout()
-        plt.savefig(f'figs/{model_type}_forecasting.png')
+        plt.savefig(f'figs/{model_type}_forecasting.png', dpi=400)
         plt.show()
 
 

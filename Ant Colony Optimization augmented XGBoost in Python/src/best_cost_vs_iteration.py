@@ -60,11 +60,10 @@ class ACOOptimizer:
                 self.pheromones[key][idx] += 1 / ant.cost
 
     def plot_cost_vs_generation(self):
-        plt.figure(figsize=(6, 6))
+        plt.figure(figsize=(6, 3))
         plt.plot(range(1, self.num_generations + 1), self.cost_history, marker='o')
         plt.xlabel("Generation")
         plt.ylabel("Best Cost")
-        plt.title("Best Cost vs Generation in ACO")
         plt.grid(False)
         plt.tight_layout()
         plt.savefig("figs/best_cost_vs_iteration.png", dpi=400)
