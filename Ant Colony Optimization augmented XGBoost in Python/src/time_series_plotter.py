@@ -18,8 +18,8 @@ class TimeSeriesPlotter:
             axes = [axes]  # Ensure axes is always a list
 
         for i, ax in enumerate(axes):
-            ax.plot(self.time[i], self.actual[i], label='Actual', color='blue', linestyle='--')
-            ax.plot(self.time[i], self.predicted[i], label='Predicted', color='orange')
+            ax.plot(self.time[i], self.actual[i], label='Actual', color='gray', linestyle='--')
+            ax.plot(self.time[i], self.predicted[i], label='Predicted', color='blue')
             ax.fill_between(self.time[i], self.lower_ci[i], self.upper_ci[i], color='gray', alpha=0.2,
                             label='Confidence Interval')
 
