@@ -6,27 +6,33 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error
 from scipy.stats import norm
-
+import matplotlib.dates as mdates
 class ForecastingPLot:
-    def __init__(self, data, target_column, model_type='ARIMA'):
-        self.data = data
+    def __init__(self, X_train, X_test, y_train, y_test, target_column, model_type):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
         self.target_column = target_column
         self.model_type = model_type
-        self.model = None
+
 
     def train_test_split(self, test_size):
-        self.train, self.test = train_test_split(self.data, test_size=test_size, shuffle=False)
+        pass
+        #self.train, self.test = train_test_split(self.data, test_size=test_size, shuffle=False)
         #++
 
     def fit_model(self, order=(2, 1, 0), seasonal_order=(1, 1, 1, 12)):
         if self.model_type == 'ARIMA':
-            self.model = ARIMA(self.train[self.target_column], order=order)
+            self.model = ARIMA(self.y_train, order=order)
             self.model_fit = self.model.fit()
 
         elif self.model_type == 'XGBoost':
-            self.X_train = np.array(range(len(self.train))).reshape(-1, 1)
-            self.y_train = self.train[self.target_column].values
             self.model = XGBRegressor()
+            self.model_fit = self.model.fit(self.X_train, self.y_train)
+
+        elif self.model_type == 'ACO-XGBoost':
+            self.model = XGBRegressor() # ++
             self.model_fit = self.model.fit(self.X_train, self.y_train)
 
     def forecast(self, steps):
@@ -36,30 +42,55 @@ class ForecastingPLot:
             self.conf_int = forecast_results.conf_int(alpha=0.05)
 
         elif self.model_type == 'XGBoost':
-            X_test = np.array(range(len(self.train), len(self.train) + steps)).reshape(-1, 1)
-            self.forecast_values = self.model_fit.predict(X_test)
+            self.forecast_values = self.model_fit.predict(self.X_test)
+
+        elif self.model_type == 'ACO-XGBoost':
+            self.forecast_values = self.model_fit.predict(self.X_test)
 
             # Calculate confidence intervals based on residuals
-            residuals = self.train[self.target_column].values - self.model_fit.predict(self.X_train)
+            residuals = self.y_train - self.model_fit.predict(self.X_train)
             sigma = np.std(residuals)
             self.conf_int = pd.DataFrame({
                 'lower Value': self.forecast_values - norm.ppf(0.975) * sigma,
                 'upper Value': self.forecast_values + norm.ppf(0.975) * sigma
             })
+            print(self.conf_int)
 
     def plot_forecast(self, model_type, d):
         fig, ax = plt.subplots(figsize=(5, 3))
-        plt.plot(self.data.index, self.data[self.target_column], label='Historical Data')
+        plt.plot(self.X_train.index, self.y_train, label='Historical Data')
 
-        plt.plot(pd.date_range(self.data.index[-1], periods=len(self.forecast_values)+1, freq='D')[1:],
-                 self.forecast_values, label='Forecast', color='red')
+
+
         ax.axvline(pd.to_datetime('01-01-2024'), color='black', ls='--')
-
-        plt.fill_between(pd.date_range(self.data.index[-1], periods=len(self.forecast_values)+1, freq='D')[1:],
-                         self.conf_int.iloc[:, 0], self.conf_int.iloc[:, 1], color='pink', alpha=0.3, label='Confidence Interval')
-
+        if model_type == 'ARIMA':
+            plt.fill_between(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values)+1, freq='D')[1:],
+                             self.conf_int[:, 0], self.conf_int[:, 1], color='pink', alpha=0.3, label='Confidence Interval')
+            plt.plot(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values) + 1, freq='D')[1:],
+                     self.forecast_values, label='ARIMA Forecast', color='red')
+        elif model_type == 'XGBoost':
+            plt.scatter(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values) + 1, freq='D')[1:],
+                     self.forecast_values, label='XGBoost Forecast', color='black', marker='o', alpha=0.5)
+            plt.fill_between(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values) + 1, freq='D')[1:],
+                             self.conf_int.iloc[:, 0], self.conf_int.iloc[:, 1], color='pink', alpha=0.3,
+                             label='Confidence Interval')
+        elif model_type == 'ACO-XGBoost':
+            plt.scatter(pd.date_range(self.X_test.index[0], periods=len(self.forecast_values) , freq='W'),
+                     self.forecast_values, label='ACO-XGBoost Forecast', color='blue', marker='o', alpha=0.5)
+            plt.fill_between(pd.date_range(self.X_test.index[0], periods=len(self.forecast_values) , freq='W'),
+                             self.conf_int.iloc[:, 0], self.conf_int.iloc[:, 1], color='red', alpha=0.5,
+                             label='Confidence Interval')
+        else:
+            plt.plot(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values) + 1, freq='D')[1:],
+                     self.forecast_values, label='XGBoost Forecast', color='black', marker='+', alpha=0.1)
+            plt.fill_between(pd.date_range(self.X_train.index[-1], periods=len(self.forecast_values) + 1, freq='D')[1:],
+                             self.conf_int.iloc[:, 0], self.conf_int.iloc[:, 1], color='pink', alpha=0.3,
+                             label='Confidence Interval')
+        #ax.set_xticks()
         ax.set_xticklabels(d, rotation=75)
-        plt.legend()
+        plt.ylabel('Price')
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        plt.legend(loc='upper left')
         plt.tight_layout()
         plt.savefig(f'figs/{model_type}_forecasting.png', dpi=400)
         plt.show()
