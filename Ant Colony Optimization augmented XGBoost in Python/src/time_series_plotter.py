@@ -13,7 +13,7 @@ class TimeSeriesPlotter:
 
     def plot(self, model_name):
         n_plots = len(self.actual)
-        fig, axes = plt.subplots(n_plots, 1, figsize=(6, 3 * n_plots))
+        fig, axes = plt.subplots(n_plots, 1, figsize=(6, 3 * n_plots))  # 6,3
 
         if n_plots == 1:
             axes = [axes]  # Ensure axes is always a list
@@ -33,5 +33,5 @@ class TimeSeriesPlotter:
 
 
         plt.tight_layout()
-        plt.savefig(f'figs/{model_name} times series plot C.I.png', dpi=500)
+        plt.savefig(f'figs/{model_name} times series plot C.I.png')
         plt.show()
